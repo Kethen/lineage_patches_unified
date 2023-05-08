@@ -1,24 +1,25 @@
-From e4930b4d867d872a0e4c1a28b274dca7e2d84d5e Mon Sep 17 00:00:00 2001
-From: Pierre-Hugues Husson <phh@phh.me>
-Date: Sun, 18 Dec 2022 18:20:40 -0500
-Subject: [PATCH 33/35] FOD support for Asus ZF8 and Samsung devices
+From 86f47351fd0bd67f13f2b2275a0198588bd17942 Mon Sep 17 00:00:00 2001
+From: Katharine Chui <kwchuiaa@connect.ust.hk>
+Date: Tue, 9 May 2023 12:44:36 +0800
+Subject: [PATCH] by Pierre-Hugues Husson <phh@phh.me>, adapted to work with
+ droid-ng
+
+FOD support for Asus ZF8 and Samsung devices
 
 Thanks Asus for providing a free device to make this support
 And thanks @davigamer987 for donating enough to get a Samsung FOD device
 to make this
-
-Change-Id: Ib328f39217c3f9b42e13e186496b3f6391643637
 ---
  packages/SystemUI/Android.bp                  |   1 +
  packages/SystemUI/res/values/config.xml       |   2 +-
- .../biometrics/UdfpsControllerOverlay.kt      |   7 +-
+ .../biometrics/UdfpsControllerOverlay.kt      |   3 +
  .../android/systemui/biometrics/UdfpsView.kt  | 138 ++++++++++
  services/core/Android.bp                      |   7 +-
  .../server/biometrics/AuthService.java        | 238 +++++++++++++++++-
- 6 files changed, 388 insertions(+), 5 deletions(-)
+ 6 files changed, 385 insertions(+), 4 deletions(-)
 
 diff --git a/packages/SystemUI/Android.bp b/packages/SystemUI/Android.bp
-index 2438af19317c..60baf02c4aca 100644
+index 0ed8ec9c26bd..90126f6df6d7 100644
 --- a/packages/SystemUI/Android.bp
 +++ b/packages/SystemUI/Android.bp
 @@ -178,6 +178,7 @@ android_library {
@@ -28,12 +29,12 @@ index 2438af19317c..60baf02c4aca 100644
 +        "vendor.goodix.hardware.biometrics.fingerprint-V2.1-java",
      ],
      manifest: "AndroidManifest.xml",
-     additional_manifests: ["LineageManifest.xml"],
+     additional_manifests: ["LMODroidManifest.xml"],
 diff --git a/packages/SystemUI/res/values/config.xml b/packages/SystemUI/res/values/config.xml
-index d3e22e610fc7..ea4075b75e00 100644
+index 0162773914ce..c241a8614968 100644
 --- a/packages/SystemUI/res/values/config.xml
 +++ b/packages/SystemUI/res/values/config.xml
-@@ -580,7 +580,7 @@
+@@ -586,7 +586,7 @@
  
      <!-- The radius of the enrollment progress bar, in dp -->
      <integer name="config_udfpsEnrollProgressBar" translatable="false">
@@ -43,21 +44,10 @@ index d3e22e610fc7..ea4075b75e00 100644
  
      <!-- The time (in ms) needed to trigger the lock icon view's long-press affordance -->
 diff --git a/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsControllerOverlay.kt b/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsControllerOverlay.kt
-index 8db4927ee059..b14e2ebb56ca 100644
+index 322936190b95..0391dadb0dff 100644
 --- a/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsControllerOverlay.kt
 +++ b/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsControllerOverlay.kt
-@@ -118,7 +118,9 @@ class UdfpsControllerOverlay @JvmOverloads constructor(
-         gravity = android.view.Gravity.TOP or android.view.Gravity.LEFT
-         layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
-         flags = (Utils.FINGERPRINT_OVERLAY_LAYOUT_PARAM_FLAGS or
--                WindowManager.LayoutParams.FLAG_SPLIT_TOUCH)
-+                WindowManager.LayoutParams.FLAG_SPLIT_TOUCH) or
-+                WindowManager.LayoutParams.FLAG_DIM_BEHIND
-+        dimAmount = 0.0f
-         privateFlags = WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY
-         // Avoid announcing window title.
-         accessibilityTitle = " "
-@@ -187,6 +189,9 @@ class UdfpsControllerOverlay @JvmOverloads constructor(
+@@ -194,6 +194,9 @@ class UdfpsControllerOverlay @JvmOverloads constructor(
                      windowManager.addView(this, coreLayoutParams.updateDimensions(animation))
                      sensorRect = sensorBounds
                      touchExplorationEnabled = accessibilityManager.isTouchExplorationEnabled
@@ -259,10 +249,10 @@ index 4a8877edfa53..c8c17b56cd92 100644
      }
  }
 diff --git a/services/core/Android.bp b/services/core/Android.bp
-index 39161ba0df68..e9332f19fb3f 100644
+index d5cfc0895451..641b2cd26628 100644
 --- a/services/core/Android.bp
 +++ b/services/core/Android.bp
-@@ -175,7 +175,12 @@ java_library_static {
+@@ -177,7 +177,12 @@ java_library_static {
          "overlayable_policy_aidl-java",
          "SurfaceFlingerProperties",
          "com.android.sysprop.watchdog",
@@ -273,11 +263,11 @@ index 39161ba0df68..e9332f19fb3f 100644
 +        "vendor.samsung.hardware.biometrics.fingerprint-V3.0-java",
 +        "vendor.oplus.hardware.biometrics.fingerprint-V2.1-java",
 +        "vendor.oppo.hardware.biometrics.fingerprint-V2.1-java",
-     ],
-     javac_shard_size: 50,
- }
+         "kotlin-stdlib",
+         "kotlinx_coroutines_android",
+         "kotlinx_coroutines",
 diff --git a/services/core/java/com/android/server/biometrics/AuthService.java b/services/core/java/com/android/server/biometrics/AuthService.java
-index 7e6f35acc398..063e3599d6cd 100644
+index 5a7aa78356d2..b2ecaa7e9798 100644
 --- a/services/core/java/com/android/server/biometrics/AuthService.java
 +++ b/services/core/java/com/android/server/biometrics/AuthService.java
 @@ -77,6 +77,22 @@ import java.util.ArrayList;
@@ -313,7 +303,7 @@ index 7e6f35acc398..063e3599d6cd 100644
      /**
       * Class for injecting dependencies into AuthService.
       * TODO(b/141025588): Replace with a dependency injection framework (e.g. Guice, Dagger).
-@@ -652,6 +671,72 @@ public class AuthService extends SystemService {
+@@ -671,6 +690,72 @@ public class AuthService extends SystemService {
          registerAuthenticators(hidlConfigs);
  
          mInjector.publishBinderService(this, mImpl);
@@ -386,7 +376,7 @@ index 7e6f35acc398..063e3599d6cd 100644
      }
  
      /**
-@@ -775,18 +860,104 @@ public class AuthService extends SystemService {
+@@ -794,18 +879,104 @@ public class AuthService extends SystemService {
                  ? modality : (modality & ~BiometricAuthenticator.TYPE_CREDENTIAL);
      }
  
@@ -493,7 +483,7 @@ index 7e6f35acc398..063e3599d6cd 100644
  
          // config_is_powerbutton_fps indicates whether device has a power button fingerprint sensor.
          final boolean isPowerbuttonFps = getContext().getResources().getBoolean(
-@@ -854,4 +1025,67 @@ public class AuthService extends SystemService {
+@@ -873,4 +1044,67 @@ public class AuthService extends SystemService {
                  componentInfo, resetLockoutRequiresHardwareAuthToken,
                  resetLockoutRequiresChallenge);
      }
@@ -562,5 +552,5 @@ index 7e6f35acc398..063e3599d6cd 100644
 +    }
  }
 -- 
-2.34.1
+2.39.2
 

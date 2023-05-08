@@ -1,18 +1,28 @@
-From feb3f559b2157de9ca06438038114aedb2cc604e Mon Sep 17 00:00:00 2001
-From: Andy CrossGate Yan <GeForce8800Ultra@gmail.com>
-Date: Thu, 23 Mar 2023 15:28:42 +0000
-Subject: [PATCH 1/2] Squashed revert of LOS UDFPS changes
+From cfca7f0c50efa1ea3fd76af06e4a07ef1b03e974 Mon Sep 17 00:00:00 2001
+From: Katharine Chui <kwchuiaa@connect.ust.hk>
+Date: Tue, 9 May 2023 01:04:14 +0800
+Subject: [PATCH] by Andy CrossGate Yan <GeForce8800Ultra@gmail.com>, adapted to work with droid-ng
 
-Way less than FOD, but reverting them nonetheless to keep in line with PHH AOSP
+Revert "fixup! udfps: Restore illumination dot for global
+ hbm"
 
-- Revert "fixup! udfps: Restore illumination dot for global hbm"
-- Revert "udfps: Make pressed udfp view configurable"
-- Revert "udfps: Restore illumination dot for global hbm"
-- Revert "udfps: Change window type to TYPE_DISPLAY_OVERLAY"
+This reverts commit 215965c3dcbd12d65c91a5cae847da237180fbbd.
+
+Revert "udfps: Make pressed udfp view configurable"
+
+This reverts commit a1ada4b082c8d7bc2863f367582342fd5ee22f68.
+
+Revert "udfps: Restore illumination dot for global hbm"
+
+This reverts commit 7f5e9eed040da49abde4dddb64001e258e6bbe64.
+
+Revert "udfps: Change window type to TYPE_DISPLAY_OVERLAY"
+
+This reverts commit 206671ef61e33837506a86755ddf8936267464e9.
 ---
  .../res/drawable-nodpi/udfps_icon_pressed.png | Bin 108 -> 0 bytes
  packages/SystemUI/res/layout/udfps_view.xml   |   6 -
- .../SystemUI/res/values/lineage_config.xml    |   3 -
+ .../SystemUI/res/values/lmodroid_config.xml   |   3 -
  .../biometrics/AuthContainerView.java         |   2 +-
  .../biometrics/UdfpsControllerOverlay.kt      |   2 +-
  .../systemui/biometrics/UdfpsSurfaceView.java | 159 ------------------
@@ -48,11 +58,11 @@ index 0fcbfa161ddf..257d238f5c54 100644
 -        android:visibility="invisible"/>
 -
  </com.android.systemui.biometrics.UdfpsView>
-diff --git a/packages/SystemUI/res/values/lineage_config.xml b/packages/SystemUI/res/values/lineage_config.xml
-index 3b61502f551c..c7a73b79a5ec 100644
---- a/packages/SystemUI/res/values/lineage_config.xml
-+++ b/packages/SystemUI/res/values/lineage_config.xml
-@@ -19,9 +19,6 @@
+diff --git a/packages/SystemUI/res/values/lmodroid_config.xml b/packages/SystemUI/res/values/lmodroid_config.xml
+index 7e9b11480c08..a750ab20a1ac 100644
+--- a/packages/SystemUI/res/values/lmodroid_config.xml
++++ b/packages/SystemUI/res/values/lmodroid_config.xml
+@@ -20,9 +20,6 @@
      <integer name="config_maxVisibleNotificationIcons">4</integer>
      <integer name="config_maxVisibleNotificationIconsOnLock">3</integer>
  
@@ -76,7 +86,7 @@ index 699be662dd54..68e1f72d042a 100644
                  PixelFormat.TRANSLUCENT);
          lp.privateFlags |= WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS;
 diff --git a/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsControllerOverlay.kt b/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsControllerOverlay.kt
-index 6d1e958e21ad..8db4927ee059 100644
+index 164b3d266bd3..322936190b95 100644
 --- a/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsControllerOverlay.kt
 +++ b/packages/SystemUI/src/com/android/systemui/biometrics/UdfpsControllerOverlay.kt
 @@ -109,7 +109,7 @@ class UdfpsControllerOverlay @JvmOverloads constructor(
@@ -322,5 +332,5 @@ index 97590822a3fb..4a8877edfa53 100644
      }
  }
 -- 
-2.34.1
+2.39.2
 

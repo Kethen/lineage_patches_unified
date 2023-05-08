@@ -1,18 +1,48 @@
-From f0b54d18cd3c7382f230bedb198177c68e2bb3b2 Mon Sep 17 00:00:00 2001
-From: Andy CrossGate Yan <GeForce8800Ultra@gmail.com>
-Date: Fri, 10 Jun 2022 21:33:47 +0800
-Subject: [PATCH 2/2] Revert "Biometrics: Allow disabling of fingerprint
- cleanups"
+From ce075d602c8d2cf9e8557686e0ec9153ea5d8b28 Mon Sep 17 00:00:00 2001
+From: Katharine Chui <kwchuiaa@connect.ust.hk>
+Date: Mon, 8 May 2023 23:57:58 +0800
+Subject: [PATCH] by Andy CrossGate Yan <GeForce8800Ultra@gmail.com>, adapted to work with droid-ng
+Revert "Biometrics: Allow disabling of fingerprint cleanups"
 
-This reverts commit 87f04da03724b26f64b78e628f171e4bc4b20673.
-
-Change-Id: Iacbb74e392122c5c072251b8153367f7ee3e8aaf
+This reverts commit 661790a200e1f7220b608c908073077417dd2df4.
 ---
+ core/res/res/values/lmodroid_config.xml                   | 4 ----
+ core/res/res/values/lmodroid_symbols.xml                  | 4 ----
  .../sensors/fingerprint/hidl/Fingerprint21.java           | 8 --------
- 1 file changed, 8 deletions(-)
+ 3 files changed, 16 deletions(-)
 
+diff --git a/core/res/res/values/lmodroid_config.xml b/core/res/res/values/lmodroid_config.xml
+index 0c48818e6861..ba9e5174bf64 100644
+--- a/core/res/res/values/lmodroid_config.xml
++++ b/core/res/res/values/lmodroid_config.xml
+@@ -75,10 +75,6 @@
+         <item>restart_bootloader</item>
+      </string-array>
+ 
+-   <!-- Whether to cleanup fingerprints upon connection to the daemon and when
+-         user switches -->
+-    <bool name="config_cleanupUnusedFingerprints">true</bool>
+-
+     <!-- All the capabilities of the LEDs on this device, stored as a bit field.
+          This integer should equal the sum of the corresponding value for each
+          of the following capabilities present:
+diff --git a/core/res/res/values/lmodroid_symbols.xml b/core/res/res/values/lmodroid_symbols.xml
+index e05b9e64296b..0617d6bc6152 100644
+--- a/core/res/res/values/lmodroid_symbols.xml
++++ b/core/res/res/values/lmodroid_symbols.xml
+@@ -35,10 +35,6 @@
+     <!-- Power menu -->
+     <java-symbol type="array" name="config_restartActionsList" />
+ 
+-    <!-- Whether to cleanup fingerprints upon connection to the daemon and when
+-         user switches -->
+-    <java-symbol type="bool" name="config_cleanupUnusedFingerprints" />
+-
+     <!-- Notification light mappings -->
+     <java-symbol type="array" name="notification_light_package_mapping" />
+     <!-- On-device lights (LED) capabilities -->
 diff --git a/services/core/java/com/android/server/biometrics/sensors/fingerprint/hidl/Fingerprint21.java b/services/core/java/com/android/server/biometrics/sensors/fingerprint/hidl/Fingerprint21.java
-index 02353bc01c79..c1a86386dfd4 100644
+index 8d8b79020132..c1a86386dfd4 100644
 --- a/services/core/java/com/android/server/biometrics/sensors/fingerprint/hidl/Fingerprint21.java
 +++ b/services/core/java/com/android/server/biometrics/sensors/fingerprint/hidl/Fingerprint21.java
 @@ -128,8 +128,6 @@ public class Fingerprint21 implements IHwBinder.DeathRecipient, ServiceProvider
@@ -29,7 +59,7 @@ index 02353bc01c79..c1a86386dfd4 100644
          });
  
 -        mCleanup = context.getResources().getBoolean(
--                org.lineageos.platform.internal.R.bool.config_cleanupUnusedFingerprints);
+-                com.android.internal.R.bool.config_cleanupUnusedFingerprints);
 -
          try {
              ActivityManager.getService().registerUserSwitchObserver(mUserSwitchObserver, TAG);
@@ -45,5 +75,5 @@ index 02353bc01c79..c1a86386dfd4 100644
              scheduleUpdateActiveUserWithoutHandler(userId);
  
 -- 
-2.34.1
+2.39.2
 

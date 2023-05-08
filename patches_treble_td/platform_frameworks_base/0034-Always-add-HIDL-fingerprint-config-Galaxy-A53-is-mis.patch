@@ -1,7 +1,7 @@
-From 628db9ac97006a1dbb5e216fcc0b374ddd4bb4bd Mon Sep 17 00:00:00 2001
+From 361aff8b083eb56f812d418011d3bac343192d77 Mon Sep 17 00:00:00 2001
 From: Pierre-Hugues Husson <phh@phh.me>
 Date: Tue, 3 Jan 2023 17:59:00 -0500
-Subject: [PATCH 34/35] Always add HIDL fingerprint config (Galaxy A53 is
+Subject: [PATCH 35/36] Always add HIDL fingerprint config (Galaxy A53 is
  missing it on A12 vendor) -- but first enumerate AIDL
 
 ---
@@ -10,7 +10,7 @@ Subject: [PATCH 34/35] Always add HIDL fingerprint config (Galaxy A53 is
  2 files changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/services/core/java/com/android/server/biometrics/AuthService.java b/services/core/java/com/android/server/biometrics/AuthService.java
-index 063e3599d6cd..7d6f9a12057f 100644
+index b2ecaa7e9798..62f580e83ef4 100644
 --- a/services/core/java/com/android/server/biometrics/AuthService.java
 +++ b/services/core/java/com/android/server/biometrics/AuthService.java
 @@ -652,11 +652,11 @@ public class AuthService extends SystemService {
@@ -26,7 +26,7 @@ index 063e3599d6cd..7d6f9a12057f 100644
 +                Slog.w(TAG, "Found vendor partition without config_biometric_sensors");
                  configStrings = generateRSdkCompatibleConfiguration();
              }
-             hidlConfigs = new SensorConfig[configStrings.length];
+             final PackageManager pm = getContext().getPackageManager();
 diff --git a/services/core/java/com/android/server/biometrics/sensors/fingerprint/FingerprintService.java b/services/core/java/com/android/server/biometrics/sensors/fingerprint/FingerprintService.java
 index 94b67cedf86c..9468f5f91c24 100644
 --- a/services/core/java/com/android/server/biometrics/sensors/fingerprint/FingerprintService.java
@@ -43,5 +43,5 @@ index 94b67cedf86c..9468f5f91c24 100644
                  final IBiometricService biometricService = IBiometricService.Stub.asInterface(
                          ServiceManager.getService(Context.BIOMETRIC_SERVICE));
 -- 
-2.34.1
+2.39.2
 

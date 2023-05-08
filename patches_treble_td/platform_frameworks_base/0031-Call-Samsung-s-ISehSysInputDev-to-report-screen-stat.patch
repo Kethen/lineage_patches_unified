@@ -1,7 +1,10 @@
-From 22ad6e21e9330b89e7af8ac4cbd44f6627c688a2 Mon Sep 17 00:00:00 2001
-From: Pierre-Hugues Husson <phh@phh.me>
-Date: Wed, 14 Dec 2022 17:21:00 -0500
-Subject: [PATCH 31/35] Call Samsung's ISehSysInputDev to report screen state
+From c2a2b9f25621e7ef7663286d68ac4e9479a314f5 Mon Sep 17 00:00:00 2001
+From: Katharine Chui <kwchuiaa@connect.ust.hk>
+Date: Tue, 9 May 2023 01:44:22 +0800
+Subject: [PATCH] By Pierre-Hugues Husson <phh@phh.me>, adapted to work with
+ droid-ng
+
+Call Samsung's ISehSysInputDev to report screen state
  to touchscreen driver
 
 This fixes touchscreen not waking up on Galaxy F23
@@ -11,17 +14,17 @@ This fixes touchscreen not waking up on Galaxy F23
  2 files changed, 32 insertions(+)
 
 diff --git a/services/core/Android.bp b/services/core/Android.bp
-index f6ba92a94cde..39161ba0df68 100644
+index f9bd9e6e81ee..d5cfc0895451 100644
 --- a/services/core/Android.bp
 +++ b/services/core/Android.bp
-@@ -175,6 +175,7 @@ java_library_static {
+@@ -177,6 +177,7 @@ java_library_static {
          "overlayable_policy_aidl-java",
          "SurfaceFlingerProperties",
          "com.android.sysprop.watchdog",
 +        "vendor.samsung.hardware.sysinput-V1.2-java", // HIDL
-     ],
-     javac_shard_size: 50,
- }
+         "kotlin-stdlib",
+         "kotlinx_coroutines_android",
+         "kotlinx_coroutines",
 diff --git a/services/core/java/com/android/server/display/LocalDisplayAdapter.java b/services/core/java/com/android/server/display/LocalDisplayAdapter.java
 index efb2cb7a3283..2807f3e7fbf4 100644
 --- a/services/core/java/com/android/server/display/LocalDisplayAdapter.java
@@ -96,5 +99,5 @@ index efb2cb7a3283..2807f3e7fbf4 100644
                          // have a sidekick available, tell it now that it can take control.
                          if (Display.isSuspendedState(state) && state != Display.STATE_OFF
 -- 
-2.34.1
+2.39.2
 

@@ -1,0 +1,101 @@
+From f7b887ea66845f6ab72a6d90880c8a0a9edc975c Mon Sep 17 00:00:00 2001
+From: Katharine Chui <kwchuiaa@connect.ust.hk>
+Date: Tue, 9 May 2023 14:44:11 +0800
+Subject: [PATCH] adjust for droid-ng
+
+---
+ base.mk                                                  | 5 ++++-
+ generate.sh                                              | 2 +-
+ lmodroid.mk                                              | 2 ++
+ ng.mk                                                    | 2 ++
+ .../lineage-sdk/lineage/res/res/values/config.xml        | 0
+ .../com/android/dialer/callrecord/res/values/config.xml  | 0
+ system.prop                                              | 9 ++++++---
+ 7 files changed, 15 insertions(+), 5 deletions(-)
+ create mode 100644 lmodroid.mk
+ create mode 100644 ng.mk
+ rename {overlay-lineage => overlay-lmodroid}/lineage-sdk/lineage/res/res/values/config.xml (100%)
+ rename {overlay-lineage => overlay-lmodroid}/packages/apps/Dialer/java/com/android/dialer/callrecord/res/values/config.xml (100%)
+
+diff --git a/base.mk b/base.mk
+index 49c4da6..3c3a770 100644
+--- a/base.mk
++++ b/base.mk
+@@ -39,9 +39,12 @@ PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
+ 	ro.build.version.all_codenames=$(PLATFORM_VERSION_ALL_CODENAMES) \
+ 	ro.build.version.release=$(PLATFORM_VERSION) \
+ 	ro.build.version.security_patch=$(PLATFORM_SECURITY_PATCH) \
+-	ro.adb.secure=0 \
+ 	ro.logd.auditd=true \
+ 	ro.logd.kernel=true \
++#only if this turns out to be needed
++#	ro.adb.secure=0 \
++
++
+ 
+ #Huawei HiSuite (also other OEM custom programs I guess) it's of no use in AOSP builds
+ PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
+diff --git a/generate.sh b/generate.sh
+index 8654eeb..f933736 100644
+--- a/generate.sh
++++ b/generate.sh
+@@ -70,7 +70,7 @@ for part in a ab;do
+ 					optional_base='$(call inherit-product, device/phh/treble/base-sas.mk)'
+ 				fi
+ 
+-				target="lineage_${arch}_${part_suffix}${apps_suffix}${su_suffix}"
++				target="ng_${arch}_${part_suffix}${apps_suffix}${su_suffix}"
+ 
+ 				zygote=32
+ 				if [ "$arch" = "arm64" ];then
+diff --git a/lmodroid.mk b/lmodroid.mk
+new file mode 100644
+index 0000000..1c88fe6
+--- /dev/null
++++ b/lmodroid.mk
+@@ -0,0 +1,2 @@
++$(call inherit-product, vendor/lmodroid/config/common_full_phone.mk)
++-include vendor/lmodroid/build/core/config.mk
+diff --git a/ng.mk b/ng.mk
+new file mode 100644
+index 0000000..b1c3b9c
+--- /dev/null
++++ b/ng.mk
+@@ -0,0 +1,2 @@
++$(call inherit-product, vendor/droid-ng/config/common_full_phone.mk)
++-include vendor/lmodroid/build/core/config.mk
+diff --git a/overlay-lineage/lineage-sdk/lineage/res/res/values/config.xml b/overlay-lmodroid/lineage-sdk/lineage/res/res/values/config.xml
+similarity index 100%
+rename from overlay-lineage/lineage-sdk/lineage/res/res/values/config.xml
+rename to overlay-lmodroid/lineage-sdk/lineage/res/res/values/config.xml
+diff --git a/overlay-lineage/packages/apps/Dialer/java/com/android/dialer/callrecord/res/values/config.xml b/overlay-lmodroid/packages/apps/Dialer/java/com/android/dialer/callrecord/res/values/config.xml
+similarity index 100%
+rename from overlay-lineage/packages/apps/Dialer/java/com/android/dialer/callrecord/res/values/config.xml
+rename to overlay-lmodroid/packages/apps/Dialer/java/com/android/dialer/callrecord/res/values/config.xml
+diff --git a/system.prop b/system.prop
+index f977610..c393fef 100644
+--- a/system.prop
++++ b/system.prop
+@@ -1,4 +1,5 @@
+-ro.adb.secure=0
++#only if this turns out to be needed
++#ro.adb.secure=0
+ #Some devices have sdcardfs kernel panicing on 8.0
+ #Disable for everyone for the moment
+ ro.sys.sdcardfs=0
+@@ -8,8 +9,10 @@ persist.sys.overlay.nightmode=true
+ persist.sys.strictmode.disable=true
+ persist.sys.phh.mainkeys=0
+ 
+-fw.max_users=10
+-persist.sys.max_profiles=10
++# lmodroid already set these two
++#fw.max_users=10
++#persist.sys.max_profiles=10
++
+ ro.boot.realme.lockstate=0
+ 
+ #Fixes fingerprint unlock delay
+-- 
+2.39.2
+
